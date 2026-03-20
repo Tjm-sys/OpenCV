@@ -46,10 +46,11 @@ Kp_ang = 2.5 #AJUSTAR: +se sair da linha em curvas: regula o angulo. #Kp = Propo
 Kd = 0.02 #AJUSTAR: -se demorar para reajir Kd = Derivativo         
 erro_pos_flit = 0 #variaveis para o calculo do filtro do Kp
 erro_ang_flit = 0
-alpha = 0.2   #AJUSTAR, quanto menor mais 'suave'
+alpha_pid = 0.2   #AJUSTAR, quanto menor mais 'suave'
 derivativo_filt = 0 #filtro do Kd
-alpha_d = 0.2 #AJUSTAR, quanto menor mais
+alpha_derivativo = 0.2 #AJUSTAR, quanto menor mais
 correcao_ant = 0 #variavel para guardar a ultima correcao aplicada, caso a linha nao seja detectada
+frames_sem_linha = 0 #variavel para a intersseção
 
 #ROI
 #altura, largura, _ = frame.shape
@@ -112,7 +113,7 @@ while True:
         param1=100,param2=18,minRadius=20,maxRadius=60)
     detections = [(black_circles, (255, 0, 0)), (silver_circles, (0, 255, 0))]
 
-    if a is not 1: #se o robo ja chegou na area de resgate
+    if a == 0: #se o robo ja chegou na area de resgate
         for circles, color in detections:
             if circles is None:
                 continue
@@ -139,9 +140,9 @@ while True:
             if center_cal is None:
                 center_cal = [chosen[0], chosen[1]]
             else:
-                alpha = 0.7
-                center_cal[0] = int(alpha * center_cal[0] + (1 - alpha) * chosen[0])
-                center_cal[1] = int(alpha * center_cal[1] + (1 - alpha) * chosen[1])
+                alpha_cir = 0.7
+                center_cal[0] = int(alpha_cir * center_cal[0] + (1 - alpha_cir) * chosen[0])
+                center_cal[1] = int(alpha_cir * center_cal[1] + (1 - alpha_cir) * chosen[1])
             circle_ant = chosen
 
             cv2.circle(frame, (center_cal[0], center_cal[1]), 1, color, 3)
@@ -171,7 +172,7 @@ while True:
             a=1
             #sair da area de resgate
         
-    elif a is 1: #robo chegou no resgate
+    elif a == 1: #robo chegou no resgate
         #LINHA
         contours_black, _ = cv2.findContours(black_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE) #funcao da biblioteca CV para contornos apos o filtro da linha
         if contours_black:
@@ -191,7 +192,7 @@ while True:
                 erro_pos = cl - centro_frame
 
                 derivativo = (erro_pos - erro_pos_ant) / dt
-                derivativo_filt = (1 - alpha_d) * derivativo_filt + alpha_d * derivativo
+                derivativo_filt = (1 - alpha_derivativo) * derivativo_filt + alpha_derivativo * derivativo
 
                 erro_pos_flit = (1 - alpha) * erro_pos_flit + alpha * erro_pos #'filtro' deixa o movimento mais continuo
                 erro_ang_flit = (1 - alpha) * erro_ang_flit + alpha * angle 
