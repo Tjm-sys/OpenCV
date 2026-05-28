@@ -230,8 +230,7 @@ while True:
                 correcao = (
                     Kp_pos * erro_pos_flit +
                     Kp_ang * erro_ang_flit +
-                    Kd * derivativo_filt
-                )
+                    Kd * derivativo_filt)
 
                 correcao = max(min(correcao, 100), -100) #**limita a correcao
                 erro_pos_ant = erro_pos #salva o erro anterior
